@@ -11,7 +11,7 @@ body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);fo
 header{background:var(--primary);color:#fff;padding:12px 24px;display:flex;align-items:center;gap:10px}
 header h1{font-size:17px;font-weight:700}
 header span{font-size:11px;opacity:.75}
-.main-tabs{display:flex;gap:0;padding:0 24px;background:#fff;border-bottom:2px solid var(--border)}
+.main-tabs{display:flex;gap:0;padding:0 24px;background:#fff;border-bottom:2px solid var(--border);overflow-x:auto}
 .main-tab{padding:12px 20px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:color .15s}
 .main-tab:hover{color:var(--primary)}
 .main-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
@@ -71,24 +71,51 @@ tbody td{padding:8px 10px;vertical-align:top}
 .empty{text-align:center;padding:48px;color:var(--muted)}
 .sbar{display:flex;height:6px;border-radius:4px;overflow:hidden;margin-bottom:16px;gap:2px}
 .sbar-seg{height:100%;border-radius:2px}
+.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:20px}
+.status-card{background:var(--card);border-radius:12px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.status-card-title{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.status-card-title .icon{font-size:18px}
+.status-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f3f4f6}
+.status-row:last-child{border-bottom:none}
+.status-row-label{color:var(--muted);font-size:12px}
+.status-row-val{font-weight:700;font-size:13px}
+.status-row-val.red{color:var(--danger)}
+.status-row-val.green{color:var(--success)}
+.status-row-val.blue{color:var(--primary)}
+.status-row-val.yellow{color:#b45309}
+.pbar-wrap{margin-top:8px}
+.pbar-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px}
+.pbar{height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:4px;transition:width .4s}
+.status-breakdown{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.alert-box{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px;margin-bottom:16px}
+.alert-box.red{background:#fef2f2;border-color:#fecaca}
+.alert-box .alert-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.alert-box .alert-text{font-size:12px;line-height:1.5}
+.alert-box .alert-title{font-weight:700;margin-bottom:2px}
 </style>
 </head>
 <body>
 <header>
   <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-  <div><h1>Dashboard Maneng &#8211; Chamados &amp; Preventivas</h1><span>Boticário | Gerado em: <span id="gen-date"></span></span></div>
+  <div><h1>Dashboard Maneng – Chamados &amp; Preventivas</h1><span>Boticário | Gerado em: <span id="gen-date"></span></span></div>
 </header>
 <div class="main-tabs">
-  <div class="main-tab active" onclick="switchTab('base-gb')" id="tab-base-gb">&#128203; Base GB <span class="badge" id="cnt-base-gb">-</span></div>
-  <div class="main-tab" onclick="switchTab('preventiva')" id="tab-preventiva">&#128295; Preventiva <span class="badge" id="cnt-preventiva">-</span></div>
-  <div class="main-tab" onclick="switchTab('orcamentos')" id="tab-orcamentos">&#128176; Orçamentos LPU <span class="badge" id="cnt-orcamentos">-</span></div>
-  <div class="main-tab" onclick="switchTab('lpu')" id="tab-lpu">&#128196; LPU Negociada <span class="badge" id="cnt-lpu">-</span></div>
+  <div class="main-tab active" onclick="switchTab('status')" id="tab-status">📊 Visão Geral</div>
+  <div class="main-tab" onclick="switchTab('base-gb')" id="tab-base-gb">📋 Base GB <span class="badge" id="cnt-base-gb">-</span></div>
+  <div class="main-tab" onclick="switchTab('preventiva')" id="tab-preventiva">🔧 Preventiva <span class="badge" id="cnt-preventiva">-</span></div>
+  <div class="main-tab" onclick="switchTab('orcamentos')" id="tab-orcamentos">💰 Orçamentos LPU <span class="badge" id="cnt-orcamentos">-</span></div>
+  <div class="main-tab" onclick="switchTab('lpu')" id="tab-lpu">📄 LPU Negociada <span class="badge" id="cnt-lpu">-</span></div>
 </div>
-<div class="tab-panel active" id="panel-base-gb">
+<div class="tab-panel active" id="panel-status">
+  <div id="status-alerts"></div>
+  <div class="status-grid" id="status-grid"></div>
+</div>
+<div class="tab-panel" id="panel-base-gb">
   <div class="kpis" id="kpi-base-gb"></div>
   <div class="sbar" id="sbar-base-gb"></div>
   <div class="filters">
-    <div class="filters-title">&#128269; Filtros &#8211; Base GB</div>
+    <div class="filters-title">🔍 Filtros – Base GB</div>
     <div class="filter-grid">
       <div class="fg"><label>Busca livre</label><input type="text" id="bg-search" placeholder="Chamado, loja, descrição..."></div>
       <div class="fg"><label>Estado</label><select id="bg-estado"><option value="">Todos</option></select></div>
@@ -106,14 +133,14 @@ tbody td{padding:8px 10px;vertical-align:top}
     </div>
   </div>
   <div class="table-wrap">
-    <div class="table-header"><h3>&#128203; Chamados Corretivos</h3><div class="table-meta"><span class="count-badge" id="bg-count">-</span><div class="pagination" id="bg-pages"></div></div></div>
+    <div class="table-header"><h3>📋 Chamados Corretivos</h3><div class="table-meta"><span class="count-badge" id="bg-count">-</span><div class="pagination" id="bg-pages"></div></div></div>
     <div class="table-scroll"><table><thead><tr>
-      <th onclick="sortBG('Estado')">Estado &#8597;</th><th onclick="sortBG('Focal')">Focal &#8597;</th><th onclick="sortBG('Cód do PDV')">PDV &#8597;</th>
-      <th onclick="sortBG('PROJETO')">Projeto &#8597;</th><th>Referência</th><th onclick="sortBG('Tipo de atendimento')">Tipo &#8597;</th>
-      <th onclick="sortBG('_chamado')">Chamado &#8597;</th><th onclick="sortBG('Status do chamado')">Status &#8597;</th>
-      <th onclick="sortBG('Especialidade')">Especialidade &#8597;</th><th onclick="sortBG('Abertura chamado')">Abertura &#8597;</th>
-      <th onclick="sortBG('Data Esperada')">Dt.Esperada &#8597;</th><th onclick="sortBG('Novo SLA')">SLA &#8597;</th>
-      <th onclick="sortBG('Data Prevista')">Dt.Prevista &#8597;</th><th onclick="sortBG('Status Checklist')">Checklist &#8597;</th>
+      <th onclick="sortBG('Estado')">Estado ↕</th><th onclick="sortBG('Focal')">Focal ↕</th><th onclick="sortBG('Cód do PDV')">PDV ↕</th>
+      <th onclick="sortBG('PROJETO')">Projeto ↕</th><th>Referência</th><th onclick="sortBG('Tipo de atendimento')">Tipo ↕</th>
+      <th onclick="sortBG('_chamado')">Chamado ↕</th><th onclick="sortBG('Status do chamado')">Status ↕</th>
+      <th onclick="sortBG('Especialidade')">Especialidade ↕</th><th onclick="sortBG('Abertura chamado')">Abertura ↕</th>
+      <th onclick="sortBG('Data Esperada')">Dt.Esperada ↕</th><th onclick="sortBG('Novo SLA')">SLA ↕</th>
+      <th onclick="sortBG('Data Prevista')">Dt.Prevista ↕</th><th onclick="sortBG('Status Checklist')">Checklist ↕</th>
       <th>Coment.Forn.</th><th></th>
     </tr></thead><tbody id="bg-body"></tbody></table>
     <div class="empty" id="bg-empty" style="display:none">Nenhum registro encontrado.</div></div>
@@ -122,7 +149,7 @@ tbody td{padding:8px 10px;vertical-align:top}
 <div class="tab-panel" id="panel-preventiva">
   <div class="kpis" id="kpi-prev"></div>
   <div class="filters">
-    <div class="filters-title">&#128269; Filtros &#8211; Preventiva</div>
+    <div class="filters-title">🔍 Filtros – Preventiva</div>
     <div class="filter-grid">
       <div class="fg"><label>Busca livre</label><input type="text" id="pv-search" placeholder="PDV, loja, técnico..."></div>
       <div class="fg"><label>Estado</label><select id="pv-estado"><option value="">Todos</option></select></div>
@@ -136,12 +163,12 @@ tbody td{padding:8px 10px;vertical-align:top}
     <div class="f-actions"><button class="btn btn-primary" onclick="filterPV()">Aplicar</button><button class="btn btn-secondary" onclick="resetPV()">Limpar</button></div>
   </div>
   <div class="table-wrap">
-    <div class="table-header"><h3>&#128295; Preventivas</h3><div class="table-meta"><span class="count-badge" id="pv-count">-</span><div class="pagination" id="pv-pages"></div></div></div>
+    <div class="table-header"><h3>🔧 Preventivas</h3><div class="table-meta"><span class="count-badge" id="pv-count">-</span><div class="pagination" id="pv-pages"></div></div></div>
     <div class="table-scroll"><table><thead><tr>
-      <th onclick="sortPV('Cod_PDV')">PDV &#8597;</th><th>Referência</th><th onclick="sortPV('Estado')">Estado &#8597;</th>
-      <th onclick="sortPV('Modelo de Negócio')">Modelo &#8597;</th><th onclick="sortPV('Tipo Preventiva')">Tipo &#8597;</th>
-      <th onclick="sortPV('Mês Planejado')">Mês &#8597;</th><th onclick="sortPV('Status da preventiva')">Status &#8597;</th>
-      <th>PTR?</th><th>Alpinista?</th><th onclick="sortPV('Data e hora prevista')">Data Prevista &#8597;</th>
+      <th onclick="sortPV('Cod_PDV')">PDV ↕</th><th>Referência</th><th onclick="sortPV('Estado')">Estado ↕</th>
+      <th onclick="sortPV('Modelo de Negócio')">Modelo ↕</th><th onclick="sortPV('Tipo Preventiva')">Tipo ↕</th>
+      <th onclick="sortPV('Mês Planejado')">Mês ↕</th><th onclick="sortPV('Status da preventiva')">Status ↕</th>
+      <th>PTR?</th><th>Alpinista?</th><th onclick="sortPV('Data e hora prevista')">Data Prevista ↕</th>
       <th>Técnico</th><th>Obs. Analista</th><th></th>
     </tr></thead><tbody id="pv-body"></tbody></table>
     <div class="empty" id="pv-empty" style="display:none">Nenhum registro encontrado.</div></div>
@@ -150,7 +177,7 @@ tbody td{padding:8px 10px;vertical-align:top}
 <div class="tab-panel" id="panel-orcamentos">
   <div class="kpis" id="kpi-orc"></div>
   <div class="filters">
-    <div class="filters-title">&#128269; Filtros &#8211; Orçamentos LPU</div>
+    <div class="filters-title">🔍 Filtros – Orçamentos LPU</div>
     <div class="filter-grid">
       <div class="fg"><label>Busca livre</label><input type="text" id="orc-search" placeholder="Chamado, descrição..."></div>
       <div class="fg"><label>Estado</label><select id="orc-estado"><option value="">Todos</option></select></div>
@@ -160,13 +187,13 @@ tbody td{padding:8px 10px;vertical-align:top}
     <div class="f-actions"><button class="btn btn-primary" onclick="filterORC()">Aplicar</button><button class="btn btn-secondary" onclick="resetORC()">Limpar</button></div>
   </div>
   <div class="table-wrap">
-    <div class="table-header"><h3>&#128176; Orçamentos LPU/LPS</h3><div class="table-meta"><span class="count-badge" id="orc-count">-</span><div class="pagination" id="orc-pages"></div></div></div>
+    <div class="table-header"><h3>💰 Orçamentos LPU/LPS</h3><div class="table-meta"><span class="count-badge" id="orc-count">-</span><div class="pagination" id="orc-pages"></div></div></div>
     <div class="table-scroll"><table><thead><tr>
-      <th onclick="sortORC('DATA ENVIO ORÇAMENTO')">Dt.Envio &#8597;</th><th onclick="sortORC('CHAMADO')">Chamado &#8597;</th>
-      <th>Descrição Item</th><th>Und.</th><th onclick="sortORC('QTDD')">Qtd &#8597;</th>
-      <th onclick="sortORC('PREÇO')">Preço &#8597;</th><th onclick="sortORC('VALOR')">Valor &#8597;</th>
-      <th onclick="sortORC('ESTADO')">Estado &#8597;</th><th>Unidade (PDV)</th>
-      <th onclick="sortORC('FOCAL GBBS')">Focal &#8597;</th><th onclick="sortORC('STATUS FORNECEDOR')">Status Forn. &#8597;</th>
+      <th onclick="sortORC('DATA ENVIO ORÇAMENTO')">Dt.Envio ↕</th><th onclick="sortORC('CHAMADO')">Chamado ↕</th>
+      <th>Descrição Item</th><th>Und.</th><th onclick="sortORC('QTDD')">Qtd ↕</th>
+      <th onclick="sortORC('PREÇO')">Preço ↕</th><th onclick="sortORC('VALOR')">Valor ↕</th>
+      <th onclick="sortORC('ESTADO')">Estado ↕</th><th>Unidade (PDV)</th>
+      <th onclick="sortORC('FOCAL GBBS')">Focal ↕</th><th onclick="sortORC('STATUS FORNECEDOR')">Status Forn. ↕</th>
       <th>Nº Proposta</th><th>Obs. Analista</th>
     </tr></thead><tbody id="orc-body"></tbody></table>
     <div class="empty" id="orc-empty" style="display:none">Nenhum registro encontrado.</div></div>
@@ -175,7 +202,7 @@ tbody td{padding:8px 10px;vertical-align:top}
 <div class="tab-panel" id="panel-lpu">
   <div class="kpis" id="kpi-lpu"></div>
   <div class="filters">
-    <div class="filters-title">&#128269; Filtros &#8211; LPU Negociada</div>
+    <div class="filters-title">🔍 Filtros – LPU Negociada</div>
     <div class="filter-grid">
       <div class="fg"><label>Busca livre</label><input type="text" id="lpu-search" placeholder="Código, descrição..."></div>
       <div class="fg"><label>Categoria</label><select id="lpu-cat"><option value="">Todas</option></select></div>
@@ -185,11 +212,11 @@ tbody td{padding:8px 10px;vertical-align:top}
     <div class="f-actions"><button class="btn btn-primary" onclick="filterLPU()">Aplicar</button><button class="btn btn-secondary" onclick="resetLPU()">Limpar</button></div>
   </div>
   <div class="table-wrap">
-    <div class="table-header"><h3>&#128196; Tabela de Preços LPU Negociada</h3><div class="table-meta"><span class="count-badge" id="lpu-count">-</span><div class="pagination" id="lpu-pages"></div></div></div>
+    <div class="table-header"><h3>📄 Tabela de Preços LPU Negociada</h3><div class="table-meta"><span class="count-badge" id="lpu-count">-</span><div class="pagination" id="lpu-pages"></div></div></div>
     <div class="table-scroll"><table><thead><tr>
-      <th onclick="sortLPU('CATEGORIA')">Categoria &#8597;</th><th onclick="sortLPU('COD')">Cód. &#8597;</th>
-      <th>Descrição</th><th onclick="sortLPU('UNIDADE')">Und. &#8597;</th>
-      <th onclick="sortLPU('PREÇO REV.2')">Preço &#8597;</th><th onclick="sortLPU('ESTADO')">Estado &#8597;</th>
+      <th onclick="sortLPU('CATEGORIA')">Categoria ↕</th><th onclick="sortLPU('COD')">Cód. ↕</th>
+      <th>Descrição</th><th onclick="sortLPU('UNIDADE')">Und. ↕</th>
+      <th onclick="sortLPU('PREÇO REV.2')">Preço ↕</th><th onclick="sortLPU('ESTADO')">Estado ↕</th>
     </tr></thead><tbody id="lpu-body"></tbody></table>
     <div class="empty" id="lpu-empty" style="display:none">Nenhum registro encontrado.</div></div>
   </div>
@@ -211,6 +238,65 @@ function populateSel(id,vals){const s=document.getElementById(id);vals.forEach(v
 document.getElementById('gen-date').textContent=new Date().toLocaleDateString('pt-BR');
 function switchTab(t){document.querySelectorAll('.main-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));document.getElementById('tab-'+t).classList.add('active');document.getElementById('panel-'+t).classList.add('active');}
 function makePaginator(id,total,page,fn){const pages=Math.ceil(total/PAGE_SIZE);if(pages<=1){document.getElementById(id).innerHTML='';return;}let h='';const s=Math.max(1,page-2),e=Math.min(pages,page+2);if(s>1)h+='<button class="page-btn" onclick="'+fn+'(1)">1</button>';if(s>2)h+='<span class="page-info">&#x2026;</span>';for(let i=s;i<=e;i++)h+='<button class="page-btn'+(i===page?' active':'')+'" onclick="'+fn+'('+i+')">'+i+'</button>';if(e<pages-1)h+='<span class="page-info">&#x2026;</span>';if(e<pages)h+='<button class="page-btn" onclick="'+fn+'('+pages+')">'+pages+'</button>';h+='<span class="page-info">('+total+')</span>';document.getElementById(id).innerHTML=h;}
+function renderStatus(){
+  const bgT=BG.length,bgFo=BG.filter(r=>r['Novo SLA']==='Fora do Prazo').length,bgDe=BG.filter(r=>r['Novo SLA']==='Dentro do Prazo').length;
+  const bgAn=BG.filter(r=>/^[1-5]\./.test(r['Status do chamado']||'')).length;
+  const bgCo=BG.filter(r=>r['Status do chamado']==='6.Contratado').length;
+  const bgEx=BG.filter(r=>['7.Executado','7.Concluido / Faturamento Liberado','8.Concluído / Faturamento Liberado'].includes(r['Status do chamado'])).length;
+  const bgFoPct=bgT?Math.round(bgFo/bgT*100):0;
+  const bgStatusCounts={};BG.forEach(r=>{const s=r['Status do chamado']||'Outros';bgStatusCounts[s]=(bgStatusCounts[s]||0)+1;});
+  const bgStatusColors={'1.Análise':'b-gray','2.Cotação Direta':'b-yellow','3.Criar Pedido':'b-yellow','4.Cotação Supri':'b-yellow','5.Aprovação GVO':'b-orange','5.Aprovação PFIN':'b-orange','6.Contratado':'b-blue','7.Executado':'b-green','7.Concluido / Faturamento Liberado':'b-green','8.Concluído / Faturamento Liberado':'b-green'};
+  let bgBreakdown=Object.entries(bgStatusCounts).filter(([k])=>k).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<span class="badge '+(bgStatusColors[k]||'b-gray')+'" style="margin:2px">'+esc(k.length>30?k.substring(0,28)+'…':k)+' <strong>'+v+'</strong></span>').join('');
+  const pvT=PV.length,pvCo=PV.filter(r=>r['Status da preventiva']==='7.Concluido / Faturamento Liberado').length;
+  const pvAg=PV.filter(r=>r['Status da preventiva']==='1.Agendado').length;
+  const pvNr=PV.filter(r=>['6.Reprovado','4.Preventiva não realizada conforme cronograma programado'].includes(r['Status da preventiva'])).length;
+  const pvCa=PV.filter(r=>r['Status da preventiva']==='8.Cancelado').length;
+  const pvCoPct=pvT?Math.round(pvCo/pvT*100):0;
+  const pvStatusCounts={};PV.forEach(r=>{const s=r['Status da preventiva']||'Outros';pvStatusCounts[s]=(pvStatusCounts[s]||0)+1;});
+  const pvStatusColors={'7.Concluido / Faturamento Liberado':'b-green','1.Agendado':'b-blue','4.Preventiva não realizada conforme cronograma programado':'b-red','8.Cancelado':'b-gray','6.Reprovado':'b-red','3.Loja em reforma - não realizar preventiva':'b-yellow','0.Aguardando - Cronograma':'b-yellow'};
+  let pvBreakdown=Object.entries(pvStatusCounts).filter(([k])=>k).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v])=>'<span class="badge '+(pvStatusColors[k]||'b-gray')+'" style="margin:2px">'+esc(k.length>35?k.substring(0,33)+'…':k)+' <strong>'+v+'</strong></span>').join('');
+  const orcT=ORC.length,orcDe=ORC.filter(r=>r['STATUS FORNECEDOR']==='DENTRO LPU').length,orcFo=ORC.filter(r=>r['STATUS FORNECEDOR']==='FORA LPU').length;
+  const orcDePct=orcT?Math.round(orcDe/orcT*100):0;
+  const lpuT=LPU.length,lpuCats=new Set(LPU.map(r=>r['CATEGORIA']).filter(Boolean)).size;
+  let alerts='';
+  if(bgFoPct>30)alerts+='<div class="alert-box red"><div class="alert-icon">&#x26A0;&#xFE0F;</div><div class="alert-text"><div class="alert-title">Atenção: SLA Crítico</div>'+bgFo+' chamados ('+bgFoPct+'%) estão fora do prazo. Ação imediata recomendada.</div></div>';
+  if(pvNr>50)alerts+='<div class="alert-box"><div class="alert-icon">&#x1F514;</div><div class="alert-text"><div class="alert-title">Preventivas não realizadas</div>'+pvNr+' preventivas não foram realizadas conforme cronograma.</div></div>';
+  document.getElementById('status-alerts').innerHTML=alerts;
+  document.getElementById('status-grid').innerHTML=
+    '<div class="status-card">'+
+      '<div class="status-card-title"><span class="icon">📋</span> Chamados Corretivos (Base GB)</div>'+
+      '<div class="status-row"><span class="status-row-label">Total de chamados</span><span class="status-row-val blue">'+bgT+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Fora do prazo (SLA)</span><span class="status-row-val red">'+bgFo+' ('+bgFoPct+'%)</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Dentro do prazo</span><span class="status-row-val green">'+bgDe+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Em andamento</span><span class="status-row-val yellow">'+bgAn+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Contratado</span><span class="status-row-val blue">'+bgCo+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Executado / Concluído</span><span class="status-row-val green">'+bgEx+'</span></div>'+
+      '<div class="pbar-wrap"><div class="pbar-label"><span>SLA Fora do Prazo</span><span>'+bgFoPct+'%</span></div><div class="pbar"><div class="pbar-fill" style="width:'+bgFoPct+'%;background:'+(bgFoPct>30?'var(--danger)':'var(--warning)')+'"></div></div></div>'+
+      '<div class="status-breakdown">'+bgBreakdown+'</div>'+
+    '</div>'+
+    '<div class="status-card">'+
+      '<div class="status-card-title"><span class="icon">🔧</span> Preventivas</div>'+
+      '<div class="status-row"><span class="status-row-label">Total de preventivas</span><span class="status-row-val blue">'+pvT+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Concluídas</span><span class="status-row-val green">'+pvCo+' ('+pvCoPct+'%)</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Agendadas</span><span class="status-row-val blue">'+pvAg+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Não realizadas</span><span class="status-row-val red">'+pvNr+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Canceladas</span><span class="status-row-val yellow">'+pvCa+'</span></div>'+
+      '<div class="pbar-wrap"><div class="pbar-label"><span>Conclusão</span><span>'+pvCoPct+'%</span></div><div class="pbar"><div class="pbar-fill" style="width:'+pvCoPct+'%;background:var(--success)"></div></div></div>'+
+      '<div class="status-breakdown">'+pvBreakdown+'</div>'+
+    '</div>'+
+    '<div class="status-card">'+
+      '<div class="status-card-title"><span class="icon">💰</span> Orçamentos LPU/LPS</div>'+
+      '<div class="status-row"><span class="status-row-label">Total de itens</span><span class="status-row-val blue">'+orcT+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Dentro do LPU</span><span class="status-row-val green">'+orcDe+' ('+orcDePct+'%)</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Fora do LPU</span><span class="status-row-val red">'+orcFo+'</span></div>'+
+      '<div class="pbar-wrap"><div class="pbar-label"><span>Dentro do LPU</span><span>'+orcDePct+'%</span></div><div class="pbar"><div class="pbar-fill" style="width:'+orcDePct+'%;background:var(--success)"></div></div></div>'+
+    '</div>'+
+    '<div class="status-card">'+
+      '<div class="status-card-title"><span class="icon">📄</span> LPU Negociada</div>'+
+      '<div class="status-row"><span class="status-row-label">Total de itens na tabela</span><span class="status-row-val blue">'+lpuT+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Categorias distintas</span><span class="status-row-val blue">'+lpuCats+'</span></div>'+
+    '</div>';
+}
 let bgF=[...BG],bgP=1,bgS='',bgA=true;
 populateSel('bg-estado',unique(BG,'Estado').filter(v=>v.length<=5));
 populateSel('bg-focal',unique(BG,'Focal').filter(v=>v.length<40));
@@ -221,15 +307,15 @@ populateSel('bg-esp',unique(BG,'Especialidade').filter(v=>v.length<30&&!/^[0-9]/
 populateSel('bg-check',unique(BG,'Status Checklist').filter(v=>v.length<30));
 document.getElementById('bg-search').addEventListener('input',filterBG);
 ['bg-estado','bg-focal','bg-projeto','bg-tipo','bg-status','bg-esp','bg-sla','bg-check'].forEach(id=>document.getElementById(id).addEventListener('change',filterBG));
-function filterBG(){bgP=1;const s=document.getElementById('bg-search').value.toLowerCase();const v={estado:document.getElementById('bg-estado').value,focal:document.getElementById('bg-focal').value,projeto:document.getElementById('bg-projeto').value,tipo:document.getElementById('bg-tipo').value,status:document.getElementById('bg-status').value,esp:document.getElementById('bg-esp').value,sla:document.getElementById('bg-sla').value,check:document.getElementById('bg-check').value};bgF=BG.filter(r=>{if(v.estado&&r['Estado']!==v.estado)return false;if(v.focal&&r['Focal']!==v.focal)return false;if(v.projeto&&r['PROJETO']!==v.projeto)return false;if(v.tipo&&r['Tipo de atendimento']!==v.tipo)return false;if(v.status&&r['Status do chamado']!==v.status)return false;if(v.esp&&r['Especialidade']!==v.esp)return false;if(v.sla&&r['Novo SLA']!==v.sla)return false;if(v.check&&r['Status Checklist']!==v.check)return false;if(s){const h=[r['_chamado'],r['Referencia (nome da loja)'],r['Descricao do chamado (LeanKeep)'],r['Observacoes para Fornecedor'],r['Cod do PDV'],r['COMENTARIO_FORNECEDOR']].join(' ').toLowerCase();if(!h.includes(s))return false;}return true;});if(bgS)bgF.sort((a,b)=>bgA?String(a[bgS]).localeCompare(String(b[bgS]),'pt-BR'):String(b[bgS]).localeCompare(String(a[bgS]),'pt-BR'));renderBG();}
+function filterBG(){bgP=1;const s=document.getElementById('bg-search').value.toLowerCase();const v={estado:document.getElementById('bg-estado').value,focal:document.getElementById('bg-focal').value,projeto:document.getElementById('bg-projeto').value,tipo:document.getElementById('bg-tipo').value,status:document.getElementById('bg-status').value,esp:document.getElementById('bg-esp').value,sla:document.getElementById('bg-sla').value,check:document.getElementById('bg-check').value};bgF=BG.filter(r=>{if(v.estado&&r['Estado']!==v.estado)return false;if(v.focal&&r['Focal']!==v.focal)return false;if(v.projeto&&r['PROJETO']!==v.projeto)return false;if(v.tipo&&r['Tipo de atendimento']!==v.tipo)return false;if(v.status&&r['Status do chamado']!==v.status)return false;if(v.esp&&r['Especialidade']!==v.esp)return false;if(v.sla&&r['Novo SLA']!==v.sla)return false;if(v.check&&r['Status Checklist']!==v.check)return false;if(s){const h=[r['_chamado'],r['Referencia (nome da loja)'],r['Descrição do chamado (LeanKeep)'],r['Observações para Fornecedor'],r['Cód do PDV'],r['COMENTÁRIO_FORNECEDOR']].join(' ').toLowerCase();if(!h.includes(s))return false;}return true;});if(bgS)bgF.sort((a,b)=>bgA?String(a[bgS]).localeCompare(String(b[bgS]),'pt-BR'):String(b[bgS]).localeCompare(String(a[bgS]),'pt-BR'));renderBG();}
 function resetBG(){document.getElementById('bg-search').value='';['bg-estado','bg-focal','bg-projeto','bg-tipo','bg-status','bg-esp','bg-sla','bg-check'].forEach(id=>document.getElementById(id).value='');bgF=[...BG];bgP=1;renderBG();}
 function sortBG(c){bgS===c?bgA=!bgA:(bgS=c,bgA=true);filterBG();}
 function bgGoPage(p){bgP=p;renderBG();}
 const SC={'1.Análise':'b-gray','2.Cotação Direta':'b-yellow','3.Criar Pedido':'b-yellow','4.Cotação Supri':'b-yellow','5.Aprovação GVO':'b-orange','5.Aprovação PFIN':'b-orange','6.Contratado':'b-blue','7.Executado':'b-green','7.Concluido / Faturamento Liberado':'b-green','8.Concluído / Faturamento Liberado':'b-green'};
 function sBadge(s){return'<span class="badge '+(SC[s]||'b-gray')+'">'+esc(s)+'</span>';}
-function slaBadge(s){if(s==='Dentro do Prazo')return'<span class="badge b-green">&#x2705; Dentro</span>';if(s==='Fora do Prazo')return'<span class="badge b-red">&#x26A0;&#xFE0F; Fora</span>';return'<span class="badge b-gray">'+esc(s)+'</span>';}
+function slaBadge(s){if(s==='Dentro do Prazo')return'<span class="badge b-green">✅ Dentro</span>';if(s==='Fora do Prazo')return'<span class="badge b-red">⚠️ Fora</span>';return'<span class="badge b-gray">'+esc(s)+'</span>';}
 function renderBGKPIs(d){const t=d.length,fo=d.filter(r=>r['Novo SLA']==='Fora do Prazo').length,de=d.filter(r=>r['Novo SLA']==='Dentro do Prazo').length,co=d.filter(r=>r['Status do chamado']==='6.Contratado').length,ex=d.filter(r=>['7.Executado','7.Concluido / Faturamento Liberado','8.Concluído / Faturamento Liberado'].includes(r['Status do chamado'])).length,an=d.filter(r=>/^[1-5]\./.test(r['Status do chamado']||'')).length;document.getElementById('kpi-base-gb').innerHTML='<div class="kpi"><div class="kpi-value">'+t+'</div><div class="kpi-label">Total Chamados</div></div><div class="kpi red"><div class="kpi-value">'+fo+'</div><div class="kpi-label">Fora do Prazo ('+(t?Math.round(fo/t*100):0)+'%)</div></div><div class="kpi green"><div class="kpi-value">'+de+'</div><div class="kpi-label">Dentro do Prazo</div></div><div class="kpi yellow"><div class="kpi-value">'+an+'</div><div class="kpi-label">Em Andamento</div></div><div class="kpi purple"><div class="kpi-value">'+co+'</div><div class="kpi-label">Contratado</div></div><div class="kpi" style="border-left:4px solid #059669"><div class="kpi-value">'+ex+'</div><div class="kpi-label">Executado</div></div>';document.getElementById('cnt-base-gb').textContent=t;const colors=['#e3a008','#7c3aed','#059669','#e02424'],vals=[an,co,ex,fo],sum=vals.reduce((a,b)=>a+b,0)||1;document.getElementById('sbar-base-gb').innerHTML=vals.map((v,i)=>'<div class="sbar-seg" style="flex:'+(v/sum)+';background:'+colors[i]+'" title="'+v+'"></div>').join('');}
-function renderBG(){renderBGKPIs(bgF);const st=(bgP-1)*PAGE_SIZE,sl=bgF.slice(st,st+PAGE_SIZE);document.getElementById('bg-count').textContent=bgF.length+' registros';makePaginator('bg-pages',bgF.length,bgP,'bgGoPage');if(!sl.length){document.getElementById('bg-body').innerHTML='';document.getElementById('bg-empty').style.display='block';return;}document.getElementById('bg-empty').style.display='none';document.getElementById('bg-body').innerHTML=sl.map((r,i)=>'<tr><td class="nowrap">'+esc(r['Estado'])+'</td><td class="nowrap">'+esc(r['Focal'])+'</td><td class="nowrap"><strong>'+esc(r['Cód do PDV'])+'</strong></td><td class="nowrap"><span class="badge b-gray">'+esc(r['PROJETO'])+'</span></td><td class="trunc" title="'+esc(r['Referencia (nome da loja)'])+'">'+esc(r['Referencia (nome da loja)'])+'</td><td class="nowrap"><span class="badge b-gray">'+esc(r['Tipo de atendimento'])+'</span></td><td class="nowrap"><strong>'+esc(r['_chamado'])+'</strong></td><td class="nowrap">'+sBadge(r['Status do chamado'])+'</td><td class="nowrap">'+esc(r['Especialidade'])+'</td><td class="nowrap">'+esc(r['Abertura chamado'])+'</td><td class="nowrap">'+esc(r['Data Esperada'])+'</td><td class="nowrap">'+slaBadge(r['Novo SLA'])+'</td><td class="nowrap">'+esc(r['Data Prevista'])+'</td><td class="nowrap">'+(r['Status Checklist']?'<span class="badge '+(r['Status Checklist'].toLowerCase().includes('conclu')?'b-green':'b-gray')+'">'+esc(r['Status Checklist'])+'</span>':'')+'</td><td class="trunc" style="max-width:140px" title="'+esc(r['COMENTÁRIO_FORNECEDOR'])+'">'+esc((r['COMENTÁRIO_FORNECEDOR']||'').substring(0,60))+((r['COMENTÁRIO_FORNECEDOR']||'').length>60?'&#x2026;':'')+'</td><td><button class="btn btn-primary btn-sm" onclick="openModalBG('+(st+i)+')">Ver</button></td></tr>').join('');}
+function renderBG(){renderBGKPIs(bgF);const st=(bgP-1)*PAGE_SIZE,sl=bgF.slice(st,st+PAGE_SIZE);document.getElementById('bg-count').textContent=bgF.length+' registros';makePaginator('bg-pages',bgF.length,bgP,'bgGoPage');if(!sl.length){document.getElementById('bg-body').innerHTML='';document.getElementById('bg-empty').style.display='block';return;}document.getElementById('bg-empty').style.display='none';document.getElementById('bg-body').innerHTML=sl.map((r,i)=>'<tr><td class="nowrap">'+esc(r['Estado'])+'</td><td class="nowrap">'+esc(r['Focal'])+'</td><td class="nowrap"><strong>'+esc(r['Cód do PDV'])+'</strong></td><td class="nowrap"><span class="badge b-gray">'+esc(r['PROJETO'])+'</span></td><td class="trunc" title="'+esc(r['Referencia (nome da loja)'])+'">'+esc(r['Referencia (nome da loja)'])+'</td><td class="nowrap"><span class="badge b-gray">'+esc(r['Tipo de atendimento'])+'</span></td><td class="nowrap"><strong>'+esc(r['_chamado'])+'</strong></td><td class="nowrap">'+sBadge(r['Status do chamado'])+'</td><td class="nowrap">'+esc(r['Especialidade'])+'</td><td class="nowrap">'+esc(r['Abertura chamado'])+'</td><td class="nowrap">'+esc(r['Data Esperada'])+'</td><td class="nowrap">'+slaBadge(r['Novo SLA'])+'</td><td class="nowrap">'+esc(r['Data Prevista'])+'</td><td class="nowrap">'+(r['Status Checklist']?'<span class="badge '+(r['Status Checklist'].toLowerCase().includes('conclu')?'b-green':'b-gray')+'">'+esc(r['Status Checklist'])+'</span>':'')+'</td><td class="trunc" style="max-width:140px" title="'+esc(r['COMENTÁRIO_FORNECEDOR'])+'">'+esc((r['COMENTÁRIO_FORNECEDOR']||'').substring(0,60))+((r['COMENTÁRIO_FORNECEDOR']||'').length>60?'…':'')+'</td><td><button class="btn btn-primary btn-sm" onclick="openModalBG('+(st+i)+')">Ver</button></td></tr>').join('');}
 function openModalBG(idx){const r=bgF[idx];document.getElementById('modal-title').textContent='Chamado '+(r['_chamado']||'-')+' – '+(r['Cód do PDV']||'-');const pairs=[['Estado',r['Estado']],['Focal',r['Focal']],['PDV',r['Cód do PDV']],['Projeto',r['PROJETO']],['Tipo',r['Tipo de atendimento']],['Status',r['Status do chamado']],['Especialidade',r['Especialidade']],['SLA',r['Novo SLA']],['Abertura',r['Abertura chamado']],['Dt.Esperada',r['Data Esperada']],['Dt.Prevista',r['Data Prevista']],['Nº Checklist',r['Nº CheckList']],['Status Checklist',r['Status Checklist']],['Prazo Forn.',r['PRAZO_FORN']]];let h='<div class="detail-grid">'+pairs.map(([l,v])=>'<div class="di"><label>'+esc(l)+'</label><div>'+esc(v)+'</div></div>').join('')+'</div>';[['Referência',r['Referencia (nome da loja)']],['Descrição do Chamado',r['Descrição do chamado (LeanKeep)']],['Obs. para Fornecedor',r['Observações para Fornecedor']],['Obs. Time Controle',r['Observação do Time Controle (interno)']],['Comentário Fornecedor',r['COMENTÁRIO_FORNECEDOR']]].forEach(([l,v])=>{if(v)h+='<div style="margin-top:12px"><div class="di"><label>'+esc(l)+'</label></div><div class="dblock">'+esc(v)+'</div></div>';});document.getElementById('modal-body').innerHTML=h;document.getElementById('modal').classList.add('open');}
 let pvF=[...PV],pvP=1,pvS='',pvA=true;
 populateSel('pv-estado',unique(PV,'Estado').filter(v=>v.length<=5));
@@ -243,9 +329,9 @@ function resetPV(){document.getElementById('pv-search').value='';['pv-estado','p
 function sortPV(c){pvS===c?pvA=!pvA:(pvS=c,pvA=true);filterPV();}
 function pvGoPage(p){pvP=p;renderPV();}
 const PSC={'7.Concluido / Faturamento Liberado':'b-green','1.Agendado':'b-blue','4.Preventiva não realizada conforme cronograma programado':'b-red','8.Cancelado':'b-gray','6.Reprovado':'b-red','3.Loja em reforma - não realizar preventiva':'b-yellow','0.Aguardando - Cronograma':'b-yellow'};
-function pvBadge(s){const c=PSC[s]||'b-gray';return'<span class="badge '+c+'" title="'+esc(s)+'">'+esc((s||'').substring(0,25))+((s||'').length>25?'&#x2026;':'')+'</span>';}
+function pvBadge(s){const c=PSC[s]||'b-gray';return'<span class="badge '+c+'" title="'+esc(s)+'">'+esc((s||'').substring(0,25))+((s||'').length>25?'…':'')+'</span>';}
 function renderPVKPIs(d){const t=d.length,co=d.filter(r=>r['Status da preventiva']==='7.Concluido / Faturamento Liberado').length,ag=d.filter(r=>r['Status da preventiva']==='1.Agendado').length,re=d.filter(r=>['6.Reprovado','4.Preventiva não realizada conforme cronograma programado'].includes(r['Status da preventiva'])).length,ca=d.filter(r=>r['Status da preventiva']==='8.Cancelado').length;document.getElementById('kpi-prev').innerHTML='<div class="kpi"><div class="kpi-value">'+t+'</div><div class="kpi-label">Total Preventivas</div></div><div class="kpi green"><div class="kpi-value">'+co+'</div><div class="kpi-label">Concluídas ('+(t?Math.round(co/t*100):0)+'%)</div></div><div class="kpi" style="border-left:4px solid #1a56db"><div class="kpi-value">'+ag+'</div><div class="kpi-label">Agendadas</div></div><div class="kpi red"><div class="kpi-value">'+re+'</div><div class="kpi-label">Não Realizadas</div></div><div class="kpi yellow"><div class="kpi-value">'+ca+'</div><div class="kpi-label">Canceladas</div></div>';document.getElementById('cnt-preventiva').textContent=t;}
-function renderPV(){renderPVKPIs(pvF);const st=(pvP-1)*PAGE_SIZE,sl=pvF.slice(st,st+PAGE_SIZE);document.getElementById('pv-count').textContent=pvF.length+' registros';makePaginator('pv-pages',pvF.length,pvP,'pvGoPage');if(!sl.length){document.getElementById('pv-body').innerHTML='';document.getElementById('pv-empty').style.display='block';return;}document.getElementById('pv-empty').style.display='none';document.getElementById('pv-body').innerHTML=sl.map((r,i)=>'<tr><td class="nowrap"><strong>'+esc(r['Cod_PDV'])+'</strong></td><td class="trunc" title="'+esc(r['Referência (nome da loja)'])+'">'+esc(r['Referência (nome da loja)'])+'</td><td class="nowrap">'+esc(r['Estado'])+'</td><td class="nowrap"><span class="badge b-gray">'+esc(r['Modelo de Negócio'])+'</span></td><td class="nowrap"><span class="badge b-teal">'+esc(r['Tipo Preventiva'])+'</span></td><td class="nowrap">'+esc(r['Mês Planejado'])+'</td><td class="nowrap">'+pvBadge(r['Status da preventiva'])+'</td><td class="nowrap">'+(r['Necessário PTR?']==='Sim'?'<span class="badge b-orange">PTR</span>':esc(r['Necessário PTR?']))+'</td><td class="nowrap">'+(r['Necessário Alpinista?']==='Sim'?'<span class="badge b-purple">Alp.</span>':esc(r['Necessário Alpinista?']))+'</td><td class="nowrap">'+esc(r['Data e hora prevista'])+'</td><td class="nowrap">'+esc(r['Nome técnico'])+'</td><td class="trunc" style="max-width:160px" title="'+esc(r['Observação do analista GBBS'])+'">'+esc((r['Observação do analista GBBS']||'').substring(0,50))+((r['Observação do analista GBBS']||'').length>50?'&#x2026;':'')+'</td><td><button class="btn btn-primary btn-sm" onclick="openModalPV('+(st+i)+')">Ver</button></td></tr>').join('');}
+function renderPV(){renderPVKPIs(pvF);const st=(pvP-1)*PAGE_SIZE,sl=pvF.slice(st,st+PAGE_SIZE);document.getElementById('pv-count').textContent=pvF.length+' registros';makePaginator('pv-pages',pvF.length,pvP,'pvGoPage');if(!sl.length){document.getElementById('pv-body').innerHTML='';document.getElementById('pv-empty').style.display='block';return;}document.getElementById('pv-empty').style.display='none';document.getElementById('pv-body').innerHTML=sl.map((r,i)=>'<tr><td class="nowrap"><strong>'+esc(r['Cod_PDV'])+'</strong></td><td class="trunc" title="'+esc(r['Referência (nome da loja)'])+'">'+esc(r['Referência (nome da loja)'])+'</td><td class="nowrap">'+esc(r['Estado'])+'</td><td class="nowrap"><span class="badge b-gray">'+esc(r['Modelo de Negócio'])+'</span></td><td class="nowrap"><span class="badge b-teal">'+esc(r['Tipo Preventiva'])+'</span></td><td class="nowrap">'+esc(r['Mês Planejado'])+'</td><td class="nowrap">'+pvBadge(r['Status da preventiva'])+'</td><td class="nowrap">'+(r['Necessário PTR?']==='Sim'?'<span class="badge b-orange">PTR</span>':esc(r['Necessário PTR?']))+'</td><td class="nowrap">'+(r['Necessário Alpinista?']==='Sim'?'<span class="badge b-purple">Alp.</span>':esc(r['Necessário Alpinista?']))+'</td><td class="nowrap">'+esc(r['Data e hora prevista'])+'</td><td class="nowrap">'+esc(r['Nome técnico'])+'</td><td class="trunc" style="max-width:160px" title="'+esc(r['Observação do analista GBBS'])+'">'+esc((r['Observação do analista GBBS']||'').substring(0,50))+((r['Observação do analista GBBS']||'').length>50?'…':'')+'</td><td><button class="btn btn-primary btn-sm" onclick="openModalPV('+(st+i)+')">Ver</button></td></tr>').join('');}
 function openModalPV(idx){const r=pvF[idx];document.getElementById('modal-title').textContent='Preventiva '+(r['Cod_PDV']||r['CHAVE']||'-');const pairs=[['PDV',r['Cod_PDV']],['Estado',r['Estado']],['Modelo',r['Modelo de Negócio']],['Tipo',r['Tipo Preventiva']],['Mês Planejado',r['Mês Planejado']],['Status',r['Status da preventiva']],['PTR?',r['Necessário PTR?']],['Alpinista?',r['Necessário Alpinista?']],['Data Prevista',r['Data e hora prevista']],['Técnico',r['Nome técnico']],['CHAVE',r['CHAVE']]];let h='<div class="detail-grid">'+pairs.map(([l,v])=>'<div class="di"><label>'+esc(l)+'</label><div>'+esc(v)+'</div></div>').join('')+'</div>';[['Referência',r['Referência (nome da loja)']],['Obs. Analista',r['Observação do analista GBBS']]].forEach(([l,v])=>{if(v)h+='<div style="margin-top:12px"><div class="di"><label>'+esc(l)+'</label></div><div class="dblock">'+esc(v)+'</div></div>';});document.getElementById('modal-body').innerHTML=h;document.getElementById('modal').classList.add('open');}
 let orcF=[...ORC],orcP=1,orcS='',orcA=true;
 populateSel('orc-estado',unique(ORC,'ESTADO').filter(v=>v.length<=5));
@@ -270,7 +356,7 @@ function lpuGoPage(p){lpuP=p;renderLPU();}
 function renderLPUKPIs(d){const t=d.length,cats=new Set(d.map(r=>r['CATEGORIA']).filter(Boolean)).size;document.getElementById('kpi-lpu').innerHTML='<div class="kpi"><div class="kpi-value">'+t+'</div><div class="kpi-label">Total Itens LPU</div></div><div class="kpi purple"><div class="kpi-value">'+cats+'</div><div class="kpi-label">Categorias</div></div>';document.getElementById('cnt-lpu').textContent=t;}
 function renderLPU(){renderLPUKPIs(lpuF);const st=(lpuP-1)*PAGE_SIZE,sl=lpuF.slice(st,st+PAGE_SIZE);document.getElementById('lpu-count').textContent=lpuF.length+' itens';makePaginator('lpu-pages',lpuF.length,lpuP,'lpuGoPage');if(!sl.length){document.getElementById('lpu-body').innerHTML='';document.getElementById('lpu-empty').style.display='block';return;}document.getElementById('lpu-empty').style.display='none';document.getElementById('lpu-body').innerHTML=sl.map(r=>'<tr><td class="nowrap"><span class="badge b-teal">'+esc(r['CATEGORIA'])+'</span></td><td class="nowrap"><strong>'+esc(r['COD'])+'</strong></td><td>'+esc(r['DESCRIÇÃO'])+'</td><td class="nowrap">'+esc(r['UNIDADE'])+'</td><td class="nowrap"><strong>'+esc(r['PREÇO REV.2'])+'</strong></td><td class="nowrap">'+esc(r['ESTADO'])+'</td></tr>').join('');}
 function closeModal(e){if(e.target.id==='modal')document.getElementById('modal').classList.remove('open');}
-renderBG();renderPV();renderORC();renderLPU();
+renderStatus();renderBG();renderPV();renderORC();renderLPU();
 </script>
 </body>
 </html>
