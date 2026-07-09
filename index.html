@@ -71,6 +71,28 @@ tbody td{padding:8px 10px;vertical-align:top}
 .empty{text-align:center;padding:48px;color:var(--muted)}
 .sbar{display:flex;height:6px;border-radius:4px;overflow:hidden;margin-bottom:16px;gap:2px}
 .sbar-seg{height:100%;border-radius:2px}
+.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:20px}
+.status-card{background:var(--card);border-radius:12px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.status-card-title{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.status-card-title .icon{font-size:18px}
+.status-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f3f4f6}
+.status-row:last-child{border-bottom:none}
+.status-row-label{color:var(--muted);font-size:12px}
+.status-row-val{font-weight:700;font-size:13px}
+.status-row-val.red{color:var(--danger)}
+.status-row-val.green{color:var(--success)}
+.status-row-val.blue{color:var(--primary)}
+.status-row-val.yellow{color:#b45309}
+.pbar-wrap{margin-top:8px}
+.pbar-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px}
+.pbar{height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:4px;transition:width .4s}
+.status-breakdown{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.alert-box{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px;margin-bottom:16px}
+.alert-box.red{background:#fef2f2;border-color:#fecaca}
+.alert-box .alert-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.alert-box .alert-text{font-size:12px;line-height:1.5}
+.alert-box .alert-title{font-weight:700;margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -79,12 +101,17 @@ tbody td{padding:8px 10px;vertical-align:top}
   <div><h1>Dashboard Maneng – Chamados &amp; Preventivas</h1><span>Boticário | Gerado em: <span id="gen-date"></span></span></div>
 </header>
 <div class="main-tabs">
-  <div class="main-tab active" onclick="switchTab('base-gb')" id="tab-base-gb">📋 Base GB <span class="badge" id="cnt-base-gb">-</span></div>
+  <div class="main-tab active" onclick="switchTab('status')" id="tab-status">📊 Visão Geral</div>
+  <div class="main-tab" onclick="switchTab('base-gb')" id="tab-base-gb">📋 Base GB <span class="badge" id="cnt-base-gb">-</span></div>
   <div class="main-tab" onclick="switchTab('preventiva')" id="tab-preventiva">🔧 Preventiva <span class="badge" id="cnt-preventiva">-</span></div>
   <div class="main-tab" onclick="switchTab('orcamentos')" id="tab-orcamentos">💰 Orçamentos LPU <span class="badge" id="cnt-orcamentos">-</span></div>
   <div class="main-tab" onclick="switchTab('lpu')" id="tab-lpu">📄 LPU Negociada <span class="badge" id="cnt-lpu">-</span></div>
 </div>
-<div class="tab-panel active" id="panel-base-gb">
+<div class="tab-panel active" id="panel-status">
+  <div id="status-alerts"></div>
+  <div class="status-grid" id="status-grid"></div>
+</div>
+<div class="tab-panel" id="panel-base-gb">
   <div class="kpis" id="kpi-base-gb"></div>
   <div class="sbar" id="sbar-base-gb"></div>
   <div class="filters">
@@ -270,7 +297,66 @@ function lpuGoPage(p){lpuP=p;renderLPU();}
 function renderLPUKPIs(d){const t=d.length,cats=new Set(d.map(r=>r['CATEGORIA']).filter(Boolean)).size;document.getElementById('kpi-lpu').innerHTML='<div class="kpi"><div class="kpi-value">'+t+'</div><div class="kpi-label">Total Itens LPU</div></div><div class="kpi purple"><div class="kpi-value">'+cats+'</div><div class="kpi-label">Categorias</div></div>';document.getElementById('cnt-lpu').textContent=t;}
 function renderLPU(){renderLPUKPIs(lpuF);const st=(lpuP-1)*PAGE_SIZE,sl=lpuF.slice(st,st+PAGE_SIZE);document.getElementById('lpu-count').textContent=lpuF.length+' itens';makePaginator('lpu-pages',lpuF.length,lpuP,'lpuGoPage');if(!sl.length){document.getElementById('lpu-body').innerHTML='';document.getElementById('lpu-empty').style.display='block';return;}document.getElementById('lpu-empty').style.display='none';document.getElementById('lpu-body').innerHTML=sl.map(r=>'<tr><td class="nowrap"><span class="badge b-teal">'+esc(r['CATEGORIA'])+'</span></td><td class="nowrap"><strong>'+esc(r['COD'])+'</strong></td><td>'+esc(r['DESCRIÇÃO'])+'</td><td class="nowrap">'+esc(r['UNIDADE'])+'</td><td class="nowrap"><strong>'+esc(r['PREÇO REV.2'])+'</strong></td><td class="nowrap">'+esc(r['ESTADO'])+'</td></tr>').join('');}
 function closeModal(e){if(e.target.id==='modal')document.getElementById('modal').classList.remove('open');}
-renderBG();renderPV();renderORC();renderLPU();
+function renderStatus(){
+  const bgT=BG.length,bgFo=BG.filter(r=>r['Novo SLA']==='Fora do Prazo').length,bgDe=BG.filter(r=>r['Novo SLA']==='Dentro do Prazo').length;
+  const bgAn=BG.filter(r=>/^[1-5]\./.test(r['Status do chamado']||'')).length;
+  const bgCo=BG.filter(r=>r['Status do chamado']==='6.Contratado').length;
+  const bgEx=BG.filter(r=>['7.Executado','7.Concluido / Faturamento Liberado','8.Concluído / Faturamento Liberado'].includes(r['Status do chamado'])).length;
+  const bgFoPct=bgT?Math.round(bgFo/bgT*100):0;
+  const bgStatusCounts={};BG.forEach(r=>{const s=r['Status do chamado']||'Outros';bgStatusCounts[s]=(bgStatusCounts[s]||0)+1;});
+  const bgStatusColors={'1.Análise':'b-gray','2.Cotação Direta':'b-yellow','3.Criar Pedido':'b-yellow','4.Cotação Supri':'b-yellow','5.Aprovação GVO':'b-orange','5.Aprovação PFIN':'b-orange','6.Contratado':'b-blue','7.Executado':'b-green','7.Concluido / Faturamento Liberado':'b-green','8.Concluído / Faturamento Liberado':'b-green'};
+  let bgBreakdown=Object.entries(bgStatusCounts).filter(([k])=>k).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<span class="badge '+(bgStatusColors[k]||'b-gray')+'" style="margin:2px">'+esc(k.length>30?k.substring(0,28)+'…':k)+' <strong>'+v+'</strong></span>').join('');
+  const pvT=PV.length,pvCo=PV.filter(r=>r['Status da preventiva']==='7.Concluido / Faturamento Liberado').length;
+  const pvAg=PV.filter(r=>r['Status da preventiva']==='1.Agendado').length;
+  const pvNr=PV.filter(r=>['6.Reprovado','4.Preventiva não realizada conforme cronograma programado'].includes(r['Status da preventiva'])).length;
+  const pvCa=PV.filter(r=>r['Status da preventiva']==='8.Cancelado').length;
+  const pvCoPct=pvT?Math.round(pvCo/pvT*100):0;
+  const pvStatusCounts={};PV.forEach(r=>{const s=r['Status da preventiva']||'Outros';pvStatusCounts[s]=(pvStatusCounts[s]||0)+1;});
+  const pvStatusColors={'7.Concluido / Faturamento Liberado':'b-green','1.Agendado':'b-blue','4.Preventiva não realizada conforme cronograma programado':'b-red','8.Cancelado':'b-gray','6.Reprovado':'b-red','3.Loja em reforma - não realizar preventiva':'b-yellow','0.Aguardando - Cronograma':'b-yellow'};
+  let pvBreakdown=Object.entries(pvStatusCounts).filter(([k])=>k).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v])=>'<span class="badge '+(pvStatusColors[k]||'b-gray')+'" style="margin:2px">'+esc(k.length>35?k.substring(0,33)+'…':k)+' <strong>'+v+'</strong></span>').join('');
+  const orcT=ORC.length,orcDe=ORC.filter(r=>r['STATUS FORNECEDOR']==='DENTRO LPU').length,orcFo=ORC.filter(r=>r['STATUS FORNECEDOR']==='FORA LPU').length;
+  const orcDePct=orcT?Math.round(orcDe/orcT*100):0;
+  const lpuT=LPU.length,lpuCats=new Set(LPU.map(r=>r['CATEGORIA']).filter(Boolean)).size;
+  let alerts='';
+  if(bgFoPct>30)alerts+='<div class="alert-box red"><div class="alert-icon">&#x26A0;&#xFE0F;</div><div class="alert-text"><div class="alert-title">Atenção: SLA Crítico</div>'+bgFo+' chamados ('+bgFoPct+'%) estão fora do prazo. Ação imediata recomendada.</div></div>';
+  if(pvNr>50)alerts+='<div class="alert-box"><div class="alert-icon">&#x1F514;</div><div class="alert-text"><div class="alert-title">Preventivas não realizadas</div>'+pvNr+' preventivas não foram realizadas conforme cronograma.</div></div>';
+  document.getElementById('status-alerts').innerHTML=alerts;
+  document.getElementById('status-grid').innerHTML=
+    '<div class="status-card">'+
+      '<div class="status-card-title"><span class="icon">📋</span> Chamados Corretivos (Base GB)</div>'+
+      '<div class="status-row"><span class="status-row-label">Total de chamados</span><span class="status-row-val blue">'+bgT+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Fora do prazo (SLA)</span><span class="status-row-val red">'+bgFo+' ('+bgFoPct+'%)</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Dentro do prazo</span><span class="status-row-val green">'+bgDe+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Em andamento</span><span class="status-row-val yellow">'+bgAn+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Contratado</span><span class="status-row-val blue">'+bgCo+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Executado / Concluído</span><span class="status-row-val green">'+bgEx+'</span></div>'+
+      '<div class="pbar-wrap"><div class="pbar-label"><span>SLA Fora do Prazo</span><span>'+bgFoPct+'%</span></div><div class="pbar"><div class="pbar-fill" style="width:'+bgFoPct+'%;background:'+(bgFoPct>30?'var(--danger)':'var(--warning)')+'"></div></div></div>'+
+      '<div class="status-breakdown">'+bgBreakdown+'</div>'+
+    '</div>'+
+    '<div class="status-card">'+
+      '<div class="status-card-title"><span class="icon">🔧</span> Preventivas</div>'+
+      '<div class="status-row"><span class="status-row-label">Total de preventivas</span><span class="status-row-val blue">'+pvT+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Concluídas</span><span class="status-row-val green">'+pvCo+' ('+pvCoPct+'%)</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Agendadas</span><span class="status-row-val blue">'+pvAg+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Não realizadas</span><span class="status-row-val red">'+pvNr+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Canceladas</span><span class="status-row-val yellow">'+pvCa+'</span></div>'+
+      '<div class="pbar-wrap"><div class="pbar-label"><span>Conclusão</span><span>'+pvCoPct+'%</span></div><div class="pbar"><div class="pbar-fill" style="width:'+pvCoPct+'%;background:var(--success)"></div></div></div>'+
+      '<div class="status-breakdown">'+pvBreakdown+'</div>'+
+    '</div>'+
+    '<div class="status-card">'+
+      '<div class="status-card-title"><span class="icon">💰</span> Orçamentos LPU/LPS</div>'+
+      '<div class="status-row"><span class="status-row-label">Total de itens</span><span class="status-row-val blue">'+orcT+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Dentro do LPU</span><span class="status-row-val green">'+orcDe+' ('+orcDePct+'%)</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Fora do LPU</span><span class="status-row-val red">'+orcFo+'</span></div>'+
+      '<div class="pbar-wrap"><div class="pbar-label"><span>Dentro do LPU</span><span>'+orcDePct+'%</span></div><div class="pbar"><div class="pbar-fill" style="width:'+orcDePct+'%;background:var(--success)"></div></div></div>'+
+    '</div>'+
+    '<div class="status-card">'+
+      '<div class="status-card-title"><span class="icon">📄</span> LPU Negociada</div>'+
+      '<div class="status-row"><span class="status-row-label">Total de itens na tabela</span><span class="status-row-val blue">'+lpuT+'</span></div>'+
+      '<div class="status-row"><span class="status-row-label">Categorias distintas</span><span class="status-row-val blue">'+lpuCats+'</span></div>'+
+    '</div>';
+}
+renderStatus();renderBG();renderPV();renderORC();renderLPU();
 </script>
 </body>
 </html>
