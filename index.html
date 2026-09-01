@@ -116,29 +116,6 @@ tbody td{padding:8px 10px;vertical-align:top}
 </style>
 </head>
 <body>
-<div id="authgate" style="position:fixed;inset:0;z-index:99999;background:#0b1220;display:flex;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:14px;padding:32px 28px;width:320px;max-width:90vw;box-shadow:0 10px 40px rgba(0,0,0,.4);font-family:system-ui,-apple-system,sans-serif">
-    <div style="font-size:34px;text-align:center">&#128274;</div>
-    <h2 style="margin:8px 0 4px;font-size:17px;text-align:center;color:#111928">Dashboard Maneng</h2>
-    <p style="margin:0 0 16px;font-size:12px;color:#6b7280;text-align:center">Digite a senha para acessar</p>
-    <input id="authpwd" type="password" placeholder="Senha" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px" autofocus>
-    <div id="autherr" style="color:#e02424;font-size:12px;margin-top:8px;display:none">Senha incorreta</div>
-    <button id="authbtn" style="width:100%;margin-top:14px;padding:10px;background:#1a56db;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Entrar</button>
-  </div>
-</div>
-<script>
-(function(){
-  var HASH='6f74a688bf8ad936737dce74f796db0515150175c3342776430fb443312c7bba';
-  var gate=document.getElementById('authgate');
-  function unlock(){ try{sessionStorage.setItem('bot_auth','1')}catch(e){} gate.style.display='none'; }
-  try{ if(sessionStorage.getItem('bot_auth')==='1'){ gate.style.display='none'; } }catch(e){}
-  async function sha256(s){ var b=new TextEncoder().encode(s); var h=await crypto.subtle.digest('SHA-256',b); return Array.from(new Uint8Array(h)).map(function(x){return x.toString(16).padStart(2,'0');}).join(''); }
-  async function check(){ var v=document.getElementById('authpwd').value; var h=await sha256(v); if(h===HASH){ unlock(); } else { document.getElementById('autherr').style.display='block'; } }
-  document.getElementById('authbtn').onclick=check;
-  document.getElementById('authpwd').addEventListener('keydown',function(e){ if(e.key==='Enter') check(); });
-})();
-</script>
-
 <header>
   <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
   <div><h1>Dashboard Maneng – Chamados &amp; Preventivas</h1><span>Boticário | Gerado em: <span id="gen-date"></span></span></div>
@@ -270,21 +247,34 @@ tbody td{padding:8px 10px;vertical-align:top}
 <div class="tab-panel" id="panel-lancamento">
   <div class="filters" style="max-width:640px">
     <div class="filters-title">&#9997;&#65039; Lan&#231;ar informa&#231;&#245;es na planilha</div>
-    <div class="filter-grid">
-      <div class="fg"><label>O que deseja lan&#231;ar?</label>
-        <select id="lanc-base">
-          <option value="chamado">Chamado corretivo (Base GB)</option>
-          <option value="prev25">Preventiva 2025</option>
-          <option value="prev26">Preventiva 2026</option>
-        </select>
+
+    <div id="lanc-lock" style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:16px 18px">
+      <div style="font-size:13px;color:#374151;margin-bottom:12px">&#128274; <strong>Modo visualizador.</strong> Para lan&#231;ar informa&#231;&#245;es na planilha, entre no modo editor.</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input id="lanc-pwd" type="password" placeholder="Senha de editor" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">
+        <button id="lanc-unlock" onclick="lancUnlock()" style="padding:8px 16px;background:#1a56db;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer">Entrar como editor</button>
+        <span id="lanc-lockmsg" style="font-size:12px;color:#e02424"></span>
       </div>
     </div>
-    <div id="lanc-fields" style="margin-top:4px"></div>
-    <div style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-      <button id="lanc-submit" onclick="lancSubmit()" style="padding:10px 20px;background:#1a56db;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Enviar para a planilha</button>
-      <span id="lanc-msg" style="font-size:13px"></span>
+
+    <div id="lanc-editor" style="display:none">
+      <div style="font-size:12px;color:#057a55;margin-bottom:14px">&#10004; Modo editor ativo <a href="#" onclick="lancLock();return false" style="color:#6b7280;margin-left:6px">(sair)</a></div>
+      <div class="filter-grid">
+        <div class="fg"><label>O que deseja lan&#231;ar?</label>
+          <select id="lanc-base">
+            <option value="chamado">Chamado corretivo (Base GB)</option>
+            <option value="prev25">Preventiva 2025</option>
+            <option value="prev26">Preventiva 2026</option>
+          </select>
+        </div>
+      </div>
+      <div id="lanc-fields" style="margin-top:4px"></div>
+      <div style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <button id="lanc-submit" onclick="lancSubmit()" style="padding:10px 20px;background:#1a56db;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Enviar para a planilha</button>
+        <span id="lanc-msg" style="font-size:13px"></span>
+      </div>
+      <p style="font-size:11px;color:#6b7280;margin-top:16px;line-height:1.6">As informa&#231;&#245;es s&#227;o gravadas direto na aba correspondente da planilha Google, localizando a linha pela chave (n&#186; do chamado ou CHAVE da preventiva). O dashboard reflete a altera&#231;&#227;o na pr&#243;xima atualiza&#231;&#227;o autom&#225;tica.</p>
     </div>
-    <p style="font-size:11px;color:#6b7280;margin-top:16px;line-height:1.6">As informa&#231;&#245;es s&#227;o gravadas direto na aba correspondente da planilha Google, localizando a linha pela chave (n&#186; do chamado ou CHAVE da preventiva). O dashboard reflete a altera&#231;&#227;o na pr&#243;xima atualiza&#231;&#227;o autom&#225;tica.</p>
   </div>
   <datalist id="dl-chamado"></datalist>
   <datalist id="dl-chave"></datalist>
@@ -498,6 +488,16 @@ renderStatus();renderCharts();renderBG();renderPV();renderORC();renderLPU();
 
 <script>
 var LANC_URL='';
+var LANC_HASH='6f74a688bf8ad936737dce74f796db0515150175c3342776430fb443312c7bba';
+async function _sha256(s){ var b=new TextEncoder().encode(s); var h=await crypto.subtle.digest('SHA-256',b); return Array.from(new Uint8Array(h)).map(function(x){return x.toString(16).padStart(2,'0');}).join(''); }
+function lancShowEditor(on){ document.getElementById('lanc-lock').style.display=on?'none':'block'; document.getElementById('lanc-editor').style.display=on?'block':'none'; if(on) lancRender(); }
+async function lancUnlock(){
+  var m=document.getElementById('lanc-lockmsg'); var v=document.getElementById('lanc-pwd').value;
+  var h=await _sha256(v);
+  if(h===LANC_HASH){ try{sessionStorage.setItem('bot_editor','1')}catch(e){} m.textContent=''; document.getElementById('lanc-pwd').value=''; lancShowEditor(true); }
+  else { m.textContent='Senha incorreta'; }
+}
+function lancLock(){ try{sessionStorage.removeItem('bot_editor')}catch(e){} lancShowEditor(false); }
 var LANC_CFG={
   chamado:{keyLabel:'Nº do Chamado', dl:'dl-chamado', fields:[
     {id:'status',label:'STATUS'},
@@ -549,7 +549,9 @@ async function lancSubmit(){
 }
 window.addEventListener('load',function(){
   var b=document.getElementById('lanc-base'); if(!b) return;
-  b.addEventListener('change',lancRender); lancRender();
+  b.addEventListener('change',lancRender);
+  var pw=document.getElementById('lanc-pwd'); if(pw) pw.addEventListener('keydown',function(e){ if(e.key==='Enter') lancUnlock(); });
+  try{ if(sessionStorage.getItem('bot_editor')==='1'){ lancShowEditor(true); } else { lancRender(); } }catch(e){ lancRender(); }
   try{
     var BGa=(typeof BG!=='undefined')?BG:[], PVa=(typeof PV!=='undefined')?PV:[];
     var dlc=document.getElementById('dl-chamado'), s1={};
