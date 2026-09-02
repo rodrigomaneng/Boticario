@@ -71,7 +71,7 @@ tbody td{padding:8px 10px;vertical-align:top}
 .empty{text-align:center;padding:48px;color:var(--muted)}
 .sbar{display:flex;height:6px;border-radius:4px;overflow:hidden;margin-bottom:16px;gap:2px}
 .sbar-seg{height:100%;border-radius:2px}
-#panel-base-gb table.bg-table{table-layout:fixed;width:100%}#panel-base-gb .bg-table th,#panel-base-gb .bg-table td{white-space:normal;overflow-wrap:anywhere;vertical-align:top;font-size:12px;padding:6px 8px}#panel-base-gb .bg-table .cmt{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35}.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:20px}
+#panel-base-gb table.bg-table{table-layout:fixed;width:100%}#panel-base-gb .bg-table th,#panel-base-gb .bg-table td{white-space:normal;overflow-wrap:anywhere;vertical-align:top;font-size:12px;padding:6px 8px}#panel-base-gb .bg-table .cmt{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35}.editbox{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 16px;margin-bottom:16px}.editbox-t{font-size:13px;font-weight:700;color:#1e40af;margin-bottom:10px}.editbox label{display:block;font-size:10px;color:#6b7280;margin:8px 0 3px;text-transform:uppercase;letter-spacing:.03em;font-weight:600}.editbox input,.editbox textarea{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit}.editbox-actions{margin-top:12px;display:flex;gap:10px;align-items:center}.editbox .btn-save{padding:8px 18px;background:#1a56db;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer}.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:20px}
 .status-card{background:var(--card);border-radius:12px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
 .status-card-title{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
 .status-card-title .icon{font-size:18px}
@@ -118,7 +118,7 @@ tbody td{padding:8px 10px;vertical-align:top}
 <body>
 <header>
   <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-  <div><h1>Dashboard Maneng – Chamados &amp; Preventivas</h1><span>Boticário | Gerado em: <span id="gen-date"></span></span></div>
+  <div><h1>Dashboard Maneng – Chamados &amp; Preventivas</h1><span>Boticário | Gerado em: <span id="gen-date"></span> <span id="live-ind" style="margin-left:6px;font-weight:700"></span></span></div>
   <div id="hdr-editor" style="margin-left:auto;display:flex;align-items:center;gap:8px">
     <div id="hdr-locked" style="display:flex;align-items:center;gap:6px">
       <span style="font-size:15px">🔒</span>
@@ -318,7 +318,7 @@ function sBadge(s){return'<span class="badge '+(SC[s]||'b-gray')+'">'+esc(s)+'</
 function slaBadge(s){if(s==='Dentro do Prazo')return'<span class="badge b-green">✅ Dentro</span>';if(s==='Fora do Prazo')return'<span class="badge b-red">⚠️ Fora</span>';return'<span class="badge b-gray">'+esc(s)+'</span>';}
 function renderBGKPIs(d){const t=d.length,fo=d.filter(r=>r['Novo SLA']==='Fora do Prazo').length,de=d.filter(r=>r['Novo SLA']==='Dentro do Prazo').length,co=d.filter(r=>r['Status do chamado']==='6.Contratado').length,ex=d.filter(r=>['7.Executado','7.Concluido / Faturamento Liberado','8.Concluído / Faturamento Liberado'].includes(r['Status do chamado'])).length,an=d.filter(r=>/^[1-5]\./.test(r['Status do chamado']||'')).length;document.getElementById('kpi-base-gb').innerHTML='<div class="kpi"><div class="kpi-value">'+t+'</div><div class="kpi-label">Total Chamados</div></div><div class="kpi red"><div class="kpi-value">'+fo+'</div><div class="kpi-label">Fora do Prazo ('+(t?Math.round(fo/t*100):0)+'%)</div></div><div class="kpi green"><div class="kpi-value">'+de+'</div><div class="kpi-label">Dentro do Prazo</div></div><div class="kpi yellow"><div class="kpi-value">'+an+'</div><div class="kpi-label">Em Andamento</div></div><div class="kpi purple"><div class="kpi-value">'+co+'</div><div class="kpi-label">Contratado</div></div><div class="kpi" style="border-left:4px solid #059669"><div class="kpi-value">'+ex+'</div><div class="kpi-label">Executado</div></div>';document.getElementById('cnt-base-gb').textContent=t;const colors=['#e3a008','#7c3aed','#059669','#e02424'],vals=[an,co,ex,fo],sum=vals.reduce((a,b)=>a+b,0)||1;document.getElementById('sbar-base-gb').innerHTML=vals.map((v,i)=>'<div class="sbar-seg" style="flex:'+(v/sum)+';background:'+colors[i]+'" title="'+v+'"></div>').join('');}
 function renderBG(){renderBGKPIs(bgF);const st=(bgP-1)*PAGE_SIZE,sl=bgF.slice(st,st+PAGE_SIZE);document.getElementById('bg-count').textContent=bgF.length+' registros';makePaginator('bg-pages',bgF.length,bgP,'bgGoPage');if(!sl.length){document.getElementById('bg-body').innerHTML='';document.getElementById('bg-empty').style.display='block';return;}document.getElementById('bg-empty').style.display='none';document.getElementById('bg-body').innerHTML=sl.map((r,i)=>bgRow(r,st+i)).join('');}
-function openModalBG(idx){var r=bgF[idx];document.getElementById('modal-title').textContent='Chamado '+(r['Chamado']||r['_chamado']||'-')+' – '+(r['Cód do PDV']||'-');var BLOCK_KEYS=['COMENTÁRIO_FORNECEDOR','Descrição do chamado (LeanKeep)','Observações para Fornecedor','Observação do Time Controle (interno)','COMENTÁRIO','DATA IMPORTANTE'];var sh='',bl='';MODAL_COLS.forEach(function(c){var k=c[0],lab=c[1],v=(r[k]!==undefined?r[k]:'');if(v===''||v===null)return;var sv=String(v);if(sv.length>80||BLOCK_KEYS.indexOf(k)>=0){bl+='<div style="margin-top:12px"><div class="di"><label>'+esc(lab)+'</label></div><div class="dblock">'+esc(sv)+'</div></div>';}else{sh+='<div class="di"><label>'+esc(lab)+'</label><div>'+esc(sv)+'</div></div>';}});document.getElementById('modal-body').innerHTML='<div class="detail-grid">'+sh+'</div>'+bl;document.getElementById('modal').classList.add('open');}
+function openModalBG(idx){var r=bgF[idx];var cham=r['Chamado']||r['_chamado']||'';window.__modalCham=cham;document.getElementById('modal-title').textContent='Chamado '+(cham||'-')+' – '+(r['Cód do PDV']||'-');var BLOCK_KEYS=['COMENTÁRIO_FORNECEDOR','Descrição do chamado (LeanKeep)','Observações para Fornecedor','Observação do Time Controle (interno)','COMENTÁRIO','DATA IMPORTANTE'];var edit='';if(typeof _isEditor==='function'&&_isEditor()&&typeof LIVE_URL!=='undefined'&&LIVE_URL){edit='<div class="editbox"><div class="editbox-t">✏️ Editar &middot; grava na planilha (aba Coment\u00e1rio Fornecedor)</div>'+'<label>STATUS (coluna L)</label><input id="ed-status" type="text" value="'+escA(r['STATUS_FORN']||'')+'">'+'<label>Coment\u00e1rio / Prazo informado (coluna M)</label><textarea id="ed-coment" rows="3">'+esc(r['COMENTÁRIO_FORNECEDOR']||'')+'</textarea>'+'<label>N\u00famero checklist (coluna N)</label><input id="ed-check" type="text" value="'+escA(r['NUM_CHECKLIST_FORN']||'')+'">'+'<div class="editbox-actions"><button class="btn-save" onclick="saveModalEdit()">Salvar na planilha</button><span id="ed-msg" style="font-size:13px"></span></div></div>';}var sh='',bl='';MODAL_COLS.forEach(function(c){var k=c[0],lab=c[1],v=(r[k]!==undefined?r[k]:'');if(v===''||v===null)return;var sv=String(v);if(sv.length>80||BLOCK_KEYS.indexOf(k)>=0){bl+='<div style="margin-top:12px"><div class="di"><label>'+esc(lab)+'</label></div><div class="dblock">'+esc(sv)+'</div></div>';}else{sh+='<div class="di"><label>'+esc(lab)+'</label><div>'+esc(sv)+'</div></div>';}});document.getElementById('modal-body').innerHTML=edit+'<div class="detail-grid">'+sh+'</div>'+bl;document.getElementById('modal').classList.add('open');}
 let pvF=[...PV],pvP=1,pvS='',pvA=true;
 populateSel('pv-estado',unique(PV,'Estado').filter(v=>v.length<=5));
 populateSel('pv-modelo',unique(PV,'Modelo de Negócio').filter(v=>v.length<30));
@@ -567,6 +567,49 @@ window.addEventListener('load',function(){
     PVa.forEach(function(r){ var v=r['CHAVE']; if(v&&!s2[v]){s2[v]=1; var o=document.createElement('option'); o.value=v; dlk.appendChild(o);} });
   }catch(e){}
 });
+</script>
+
+
+<script>
+var LIVE_URL=(typeof LANC_URL!=='undefined')?LANC_URL:'';
+function pullLive(){
+  if(!LIVE_URL) return;
+  var cb='__bot_'+Date.now();
+  var sc=document.createElement('script');
+  window[cb]=function(resp){
+    try{
+      if(resp&&resp.ok&&resp.cf){
+        var cf=resp.cf;
+        (typeof BG!=='undefined'?BG:[]).forEach(function(r){
+          var k=r['Chamado']||r['_chamado']; var c=k&&cf[k];
+          if(c){ r['STATUS_FORN']=c.status||''; r['COMENTÁRIO_FORNECEDOR']=c.coment||''; r['NUM_CHECKLIST_FORN']=c.checklist||''; }
+        });
+        if(typeof renderBG==='function') renderBG();
+        var ind=document.getElementById('live-ind');
+        if(ind){ ind.textContent='● ao vivo · '+new Date().toLocaleTimeString('pt-BR').slice(0,5); ind.style.color='#bbf7d0'; }
+      }
+    }catch(e){}
+    delete window[cb]; if(sc&&sc.remove) sc.remove();
+  };
+  sc.src=LIVE_URL+(LIVE_URL.indexOf('?')>=0?'&':'?')+'action=read&callback='+cb+'&t='+Date.now();
+  sc.onerror=function(){ delete window[cb]; if(sc&&sc.remove) sc.remove(); };
+  document.body.appendChild(sc);
+}
+async function saveModalEdit(){
+  var msg=document.getElementById('ed-msg'); var cham=window.__modalCham;
+  if(!LIVE_URL){ if(msg){msg.style.color='#e02424'; msg.textContent='URL do Apps Script não configurada.';} return; }
+  var ed={chamado:cham, status:document.getElementById('ed-status').value, coment:document.getElementById('ed-coment').value, checklist:document.getElementById('ed-check').value};
+  if(msg){ msg.style.color='#6b7280'; msg.textContent='Salvando...'; }
+  var row=(typeof BG!=='undefined'?BG:[]).find(function(x){return (x['Chamado']||x['_chamado'])===cham;});
+  if(row){ row['STATUS_FORN']=ed.status; row['COMENTÁRIO_FORNECEDOR']=ed.coment; row['NUM_CHECKLIST_FORN']=ed.checklist; }
+  try{
+    await fetch(LIVE_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'write',edits:[ed]})});
+    if(msg){ msg.style.color='#057a55'; msg.textContent='✔ Salvo na planilha'; }
+    if(typeof renderBG==='function') renderBG();
+    setTimeout(pullLive,1500);
+  }catch(e){ if(msg){ msg.style.color='#e02424'; msg.textContent='✖ Falha ao salvar: '+e; } }
+}
+window.addEventListener('load',function(){ if(LIVE_URL){ pullLive(); setInterval(pullLive,120000); } });
 </script>
 
 </body>
